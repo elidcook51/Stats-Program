@@ -225,7 +225,7 @@ def invertedWeibullDF(nums, alpha, beta, eta):
     return np.exp(-1 * np.power(alpha / (nums - eta) ,beta))
 
 def invertedWeibulldf(nums, alpha, beta, eta):
-    return (beta / alpha) * np.exp(alpha / (nums - eta), beta + 1) * np.exp(-1 * np.power(alpha / (nums - eta), beta))
+    return (beta / alpha) * np.power(alpha / (nums - eta), beta + 1) * np.exp(-1 * np.power(alpha / (nums - eta), beta))
 
 def logWeibullDF(nums, alpha, beta, eta):
     return 1 - np.exp(-1 * np.power(np.log(nums - eta + 1) / alpha, beta))
@@ -352,7 +352,7 @@ def inverseNormalArray(nums, sigma, mu):
 def xi(gamma, z1, z2):
     return (1 / math.sqrt(1 - gamma)) * np.exp(((-1 * gamma) / (2 * (1 - gamma**2))) * (gamma * np.power(z1, 2) + z1 * z2 + gamma * np.power(z2, 2)) )
 
-def pix(g, lam, den1, den0):
+def pix(g, lam, den0, den1):
     prior = (1 - g) /g
     return np.power(1 +  prior * lam * den0 / den1, -1)
 
