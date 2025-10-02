@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 sheets = np.arange(1, 23, 1)
-priorProb = (((1 / 20) - (1 / 146)) / (22-1)) * (sheets - 1) + (1 / 146)
+priorProb = 1 / (-6 * sheets + 152)
 # plt.scatter(x = sheets, y = priorProb, color = 'gray')
 # plt.title('Prior Probabilty as a Function of Sheet Number')
 # plt.xlabel('Sheet Number')
@@ -51,6 +51,8 @@ g2 = priorProb[2-1]
 g12 = priorProb[12-1]
 g22 = priorProb[22-1]
 
+print(g2, g12, g22)
+
 departures = np.array([7, 19, 49])
 df0spec = stat.getdf('EX', departures, params0)
 df1spec = stat.getdf('EX', departures, params1)
@@ -68,11 +70,11 @@ pix2 = stat.pix(g2, 1, df0, df1)
 pix12 = stat.pix(g12, 1, df0, df1)
 pix22 = stat.pix(g22, 1, df0, df1)
 
-# plt.scatter(x = nums, y = pix2, color = 'gray', s= 5, label = 'Sheet 2')
-# plt.scatter(x = nums, y = pix12, color = 'darkgray', s= 5, label = 'Sheet 12')
-# plt.scatter(x = nums, y = pix22, color = 'lightgray', s= 5, label = 'Sheet 22')
-# plt.legend()
-# plt.title("Posterior Probability Function by Sheet Number")
-# plt.xlabel('Departure')
-# plt.ylabel('Posterior Probability')
-# plt.savefig(stat.getDownloadsTab() + '/Posterior Probability by Sheet Number.png')
+plt.scatter(x = nums, y = pix2, color = 'gray', s= 5, label = 'Sheet 2')
+plt.scatter(x = nums, y = pix12, color = 'darkgray', s= 5, label = 'Sheet 12')
+plt.scatter(x = nums, y = pix22, color = 'lightgray', s= 5, label = 'Sheet 22')
+plt.legend()
+plt.title("Posterior Probability Function by Sheet Number")
+plt.xlabel('Departure')
+plt.ylabel('Posterior Probability')
+plt.savefig(stat.getDownloadsTab() + '/Posterior Probability by Sheet Number.png')
