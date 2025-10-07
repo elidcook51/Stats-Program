@@ -855,3 +855,29 @@ def getParamsFromDf(distDf, dist):
         return [alpha, beta, etaL]
     else:
         return [alpha, beta, etaL, etaU]
+    
+def setUpConditionalProb(doc, real, ys):
+    happen = [doc[i] for i in range(len(real)) if real[i] == 1]
+    nothappen = [doc[i] for i in range(len(real)) if real[i] == 0]
+
+    f0 = []
+    f1 = []
+    for y in ys:
+        f1.append(len([happen[i] for i in range(len(happen)) if happen[i] == y]) / len(happen))
+        f0.append(len([nothappen[i] for i in range(len(nothappen)) if nothappen[i] == y]) / len(nothappen))
+    return f0, f1
+
+def varianceScoreDiscrete(etay, kappay):
+    etay = np.array(etay)
+    kappay = np.array(kappay)
+    return np.sum(etay * (1 - etay) * kappay)
+
+def uncertaintyScoreDiscrete(etay, kappay, g):
+    VS = varianceScoreDiscrete(etay, kappay)
+    return VS / (g * (1 - g))
+
+def calibrationScore(ys, etay, kappy):
+    ys = np.array(ys)
+    etay = np.array(etay)
+    kappay = np.array(kappay)
+    return np.sqrt(np.sum(np.power(etay - ys, 2) * kappay ))
