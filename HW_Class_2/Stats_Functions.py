@@ -876,8 +876,24 @@ def uncertaintyScoreDiscrete(etay, kappay, g):
     VS = varianceScoreDiscrete(etay, kappay)
     return VS / (g * (1 - g))
 
-def calibrationScore(ys, etay, kappy):
+def calibrationScore(ys, etay, kappay):
     ys = np.array(ys)
     etay = np.array(etay)
     kappay = np.array(kappay)
     return np.sqrt(np.sum(np.power(etay - ys, 2) * kappay ))
+
+
+def printInLatexTable(listOfLists):
+    for i in range(len(listOfLists[0])):
+        row_items = []
+        for l in listOfLists:
+            toAdd = l[i]
+            try:
+                toAdd = float(toAdd)
+                toAdd = np.round(toAdd, decimals=4)
+            except ValueError:
+                pass
+            row_items.append(str(toAdd))
+        outputString = " & ".join(row_items) + " \\\\"
+        print(outputString)
+
