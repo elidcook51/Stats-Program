@@ -883,7 +883,13 @@ def calibrationScore(ys, etay, kappay):
     return np.sqrt(np.sum(np.power(etay - ys, 2) * kappay ))
 
 
-def printInLatexTable(listOfLists):
+def printInLatexTable(listOfLists, colNames):
+    print("\\begin{table}[h]")
+    print("\\centering")
+    print("\\begin{tabular}{|" + "c|" * len(colNames)  + "}")
+    print("\\hline")
+    print(" & ".join(colNames) + "\\\\")
+    print("\\hline")
     for i in range(len(listOfLists[0])):
         row_items = []
         for l in listOfLists:
@@ -896,4 +902,7 @@ def printInLatexTable(listOfLists):
             row_items.append(str(toAdd))
         outputString = " & ".join(row_items) + " \\\\"
         print(outputString)
+    print("\\hline")
+    print("\\end{tabular}")
+    print('\\end{table}')
 
