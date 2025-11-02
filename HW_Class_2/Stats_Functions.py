@@ -671,8 +671,9 @@ def gradientDescent(params, dist, data, plottingPositions, numSteps):
         params[1] -= dBeta * (1 - i / (numSteps + 1))
     return params, getMAD(data, plottingPositions, dist, params)
 
-def findUDFit(data, lowerBound, upperBound, numSteps = 100):
-    plottingPositions = metaGaussianPlottingPositions(len(data))
+def findUDFit(data, lowerBound, upperBound, numSteps = 100, plottingPositions = None):
+    if plottingPositions is None:
+        plottingPositions = metaGaussianPlottingPositions(len(data))
     outputDf = pd.DataFrame()
     for dist in unboundedDistributions:
         alpha, beta = fitRegressUnbounded(dist, data)
@@ -744,117 +745,6 @@ def findUDFit(data, lowerBound, upperBound, numSteps = 100):
         outputDf = outputDf._append(newDict, ignore_index = True)
         print(f'Completed Row for {dist}')
     return outputDf
-
-def plotDistributions(distDf, nums, data):
-    plottingPositions = metaGaussianPlottingPositions(len(data))
-    plt.scatter(data, plottingPositions, color = 'gray')
-    for dist in unboundedDistributions:
-        tempDf = distDf[distDf['Dist'] == dist]
-        alpha = tempDf['alpha'].values[0]
-        beta = tempDf['beta'].values[0]
-        DF = getDF(dist, nums, [alpha, beta])
-        plt.scatter(nums, DF, color = 'lightgray', s = 5)
-    plt.title('Unbounded Distributions')
-    plt.ylabel("Cumulative probability")
-    plt.xlabel("Value")
-    plt.show()
-    plt.clf()
-    plt.scatter(data, plottingPositions, color='gray')
-    for dist in lowBound:
-        tempDf = distDf[distDf['Dist'] == dist]
-        alpha = tempDf['alpha'].values[0]
-        beta = tempDf['beta'].values[0]
-        eta = int(tempDf['etaL'].values[0])
-        DF = getDF(dist, nums, [alpha, beta, eta])
-        plt.scatter(nums, DF, color = 'lightgray', s = 5)
-    plt.title('Lower Bounded Distributions')
-    plt.ylabel("Cumulative probability")
-    plt.xlabel("Value")
-    plt.show()
-    plt.clf()
-    plt.scatter(data, plottingPositions, color='gray')
-    for dist in bothBound:
-        tempDf = distDf[distDf['Dist'] == dist]
-        alpha = tempDf['alpha'].values[0]
-        beta = tempDf['beta'].values[0]
-        etaL = int(tempDf['etaL'].values[0])
-        etaU = int(tempDf['etaU'].values[0])
-        DF = getDF(dist, nums, [alpha, beta, etaL, etaU])
-        plt.scatter(nums, DF, color = 'lightgray', s = 5)
-    plt.title('Double Bounded Distributions')
-    plt.ylabel("Cumulative probability")
-    plt.xlabel("Value")
-    plt.show()
-    plt.clf()
-    allDists = unboundedDistributions + lowBound + bothBound
-    for dist in allDists:
-        tempDf = distDf[distDf['Dist'] == dist]
-        alpha = tempDf['alpha'].values[0]
-        beta = tempDf['beta'].values[0]
-        etaL = int(tempDf['etaL'].values[0])
-        etaU = int(tempDf['etaU'].values[0])
-        MAD = tempDf['MAD'].values[0]
-        if dist in unboundedDistributions:
-            params = [alpha, beta]
-        elif dist in lowBound:
-            params = [alpha, beta, etaL]
-        else:
-            params = [alpha, beta, etaL, etaU]
-        DF = getDF(dist, nums, params)
-        plt.scatter(nums, DF, color = 'lightgray', s = 5)
-        plt.scatter(data, plottingPositions, color = 'gray')
-        plt.title(f"Distribution for {dist} with MAD: {MAD}")
-        plt.show()
-        plt.clf()
-
-def plotDistribution(dist, params, nums, DF = True, data = None, title = "", xlabel = "", ylabel = "", savefig = ""):
-    otherColor = 'gray'
-    if data != None:
-        plottingPositions = metaGaussianPlottingPositions(len(data))
-        plt.scatter(data, plottingPositions, color = 'gray')
-        otherColor = 'lightgray'
-    if DF:
-        DF = getDF(dist, nums, params)
-        plt.scatter(nums, DF, color = otherColor, s = 5)
-    else:
-        df = getdf(dist, nums, params)
-        plt.scatter(nums, df, color = otherColor, s = 5)
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    if savefig != "":
-        plt.savefig(savefig)
-        plt.clf()
-    else:
-        plt.show()
-        plt.clf()
-
-def plotDistributionFromDf(distDf, dist, nums, DF = True, data = None, title = "", xlabel = "", ylabel = "", savefig = ""):
-    tempDf = distDf[distDf['Dist'] == dist]
-    alpha = tempDf['alpha'].values[0]
-    beta = tempDf['beta'].values[0]
-    etaL = int(tempDf['etaL'].values[0])
-    etaU = int(tempDf['etaU'].values[0])
-    if dist in unboundedDistributions:
-        params = [alpha, beta]
-    elif dist in lowBound:
-        params = [alpha, beta, etaL]
-    else:
-        params = [alpha, beta, etaL, etaU]
-    plotDistribution(dist, params, nums, DF, data, title, xlabel, ylabel, savefig)
-
-def getParamsFromDf(distDf, dist):
-    tempDf = distDf[distDf['Dist'] == dist]
-    alpha = tempDf['alpha'].values[0]
-    beta = tempDf['beta'].values[0]
-    etaL = int(tempDf['etaL'].values[0])
-    etaU = int(tempDf['etaU'].values[0])
-    if dist in unboundedDistributions:
-        return [alpha, beta]
-    if dist in lowBound:
-        return [alpha, beta, etaL]
-    else:
-        return [alpha, beta, etaL, etaU]
     
 def setUpConditionalProb(doc, real, ys):
     happen = [doc[i] for i in range(len(real)) if real[i] == 1]
@@ -906,3 +796,24 @@ def printInLatexTable(listOfLists, colNames):
     print("\\end{tabular}")
     print('\\end{table}')
 
+def createFigureLatex(HWnum, figname, width):
+    print(r'\begin{figure}[h]')
+    print(r'\centering')
+    print(r'\includegraphics[width = ' + str(width) +  r'\linewidth]{HW' + str(HWnum) + r'/Figures/' + figname + '}')
+    print(r"\end{figure}")
+
+def quantileMethod5(quantileProbs, quantileVals):
+    yc = quantileVals[0]
+    ya = quantileVals[1]
+    yhalf = quantileVals[2]
+    yb = quantileVals[3]
+    yd = quantileVals[4]
+    zc = standardNormal(quantileProbs[0])
+    za = standardNormal(quantileProbs[1])
+    zb = standardNormal(quantileProbs[3])
+    zd = standardNormal(quantileProbs[4])
+    sigma1 = (yb - ya) / (zb - za)
+    sigma2 = (yd - yc) / (zd - zc)
+    print(sigma1)
+    print(sigma2)
+    return yhalf, np.power(sigma1 * sigma2, 1/2)
