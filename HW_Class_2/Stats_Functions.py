@@ -262,7 +262,7 @@ def normaldf(nums, sigma, mu):
 
 def logNormalDF(nums, sigma, mu, eta):
     transformedNums = (np.log(nums - eta) - mu) / sigma
-    return normalDF(transformedNums, sigma, mu)
+    return normalDF(transformedNums, 1, 0)
 
 def logNormaldf(nums, sigma, mu, eta):
     coef = 1 / ((nums - eta) * sigma * math.sqrt(2 * math.pi))
@@ -294,7 +294,7 @@ def logRatiodf(nums, type, alpha, beta, etaL, etaU):
     if type == "RG":
         return coef * reflectedGumbeldf(transformedNums, alpha, beta)
     if type == "NM":
-        return coef * normaldf(transformedNums, alpha, beta)
+        return coef * normaldf(transformedNums, 1, 0)
 
 def getdf(dist, nums, params):
     if dist == 'NM':
@@ -326,8 +326,6 @@ def getdf(dist, nums, params):
             return power2df(nums, params[1], params[2], params[3])
         return logRatiodf(nums, dist[2:], params[0], params[1], params[2], params[3])
 
-
-
 def empiricalNQT(sample):
     plotPos = metaGaussianPlottingPositions(len(sample))
     sortedSample = sorted(sample)
@@ -344,10 +342,11 @@ def inverseStandardNormalArray(nums):
     return np.array(outputList)
 
 def inverseNormalArray(nums, sigma, mu):
-    outputList = []
-    for p in nums.tolist():
-        outputList.append(inverseNormal(p, mu, sigma))
-    return np.array(outputList)
+    return inverseStandardNormalArray(nums) * sigma + mu
+    # outputList = []
+    # for p in nums.tolist():
+    #     outputList.append(inverseNormal(p, mu, sigma))
+    # return np.array(outputList)
 
 def xi(gamma, z1, z2):
     return (1 / math.sqrt(1 - gamma)) * np.exp(((-1 * gamma) / (2 * (1 - gamma**2))) * (gamma * np.power(z1, 2) + z1 * z2 + gamma * np.power(z2, 2)) )
@@ -413,8 +412,9 @@ def inverseLN(p, sigma, mu, eta):
     return np.exp(sigma * inverseStandardNormalArray(p) + mu) + eta
 
 def inverseDist(dist, p, params):
+    p = np.array(p)
     if dist == "NM":
-        return inverseNormal(p, params[1], params[0])
+        return inverseNormalArray(p, params[0], params[1])
     if dist == 'LN':
         return inverseLN(p, params[0], params[1], params[2])
     if dist == "LG":
@@ -475,7 +475,7 @@ def fitRegressUnbounded(dist, x):
         v = np.array(x)
         u = inverseStandardNormalArray(p)
         a, b = LSregression(v, u, True, True)
-        return a, b
+        return b, a
 
 def getUnboundedDF(dist, alpha, beta ,nums):
     if dist == 'LG':
@@ -671,79 +671,56 @@ def gradientDescent(params, dist, data, plottingPositions, numSteps):
         params[1] -= dBeta * (1 - i / (numSteps + 1))
     return params, getMAD(data, plottingPositions, dist, params)
 
+def fitRegress(dist, data, lowerBound = None, upperBound = None):
+    if dist in unboundedDistributions:
+        return fitRegressUnbounded(dist, data)
+    if dist in lowBound:
+        return fitRegressBounded(dist, data, lowerBound)
+    else:
+        return fitRegressDoubleBounded(dist, data, lowerBound, upperBound)
+    
+def getParams(dist, alpha, beta, lowerBound, upperBound):
+    if dist in unboundedDistributions:
+        return [alpha, beta]
+    if dist in bothBound:
+        return [alpha, beta, lowerBound, upperBound]
+    else:
+        return [alpha, beta, lowerBound]
+
+def findUDFitDist(dist, data, lowerBound = None, upperBound = None, numSteps = 100, plottingPositions = None):
+    if plottingPositions is None:
+        plottingPositions = metaGaussianPlottingPositions(len(data))
+    alpha, beta = fitRegress(dist, data, lowerBound, upperBound)
+    params = [alpha, beta] + [x for x in [lowerBound ,upperBound] if x is not None]
+    LSMAD = getMAD(data, plottingPositions, dist, params)
+    params, MAD = gradientDescent(params, dist, data, plottingPositions, numSteps)
+    estimates = getDF(dist, np.array(data), params)
+    KS = calcKStest(estimates)
+    testStat = KS[2]
+    significance = getKSTestSig(KS[2], len(data))
+    outputDict = {
+        'Dist': dist,
+        'alpha': params[0],
+        'Dist': dist,
+        'alpha': params[0],
+        'beta': params[1],
+        'etaL': 0,
+        'etaU': 0,
+        'LSalpha': alpha,
+        'LSbeta': beta,
+        'LSMAD': LSMAD,
+        'MAD': MAD,
+        'KS': testStat,
+        'KS Significance': significance,
+    }
+    return outputDict
+
 def findUDFit(data, lowerBound, upperBound, numSteps = 100, plottingPositions = None):
     if plottingPositions is None:
         plottingPositions = metaGaussianPlottingPositions(len(data))
     outputDf = pd.DataFrame()
-    for dist in unboundedDistributions:
-        alpha, beta = fitRegressUnbounded(dist, data)
-        LSMAD = getMAD(data, plottingPositions, dist, [alpha, beta])
-        params, MAD = gradientDescent([alpha, beta], dist, data, plottingPositions, numSteps)
-        estimates = getDF(dist, np.array(data), params)
-        KS = calcKStest(estimates)
-        testStat = KS[2]
-        significance = getKSTestSig(testStat, len(data))
-        newDict = {
-            'Dist': dist,
-            'alpha': params[0],
-            'beta': params[1],
-            'etaL': 0,
-            'etaU': 0,
-            'LSalpha': alpha,
-            'LSbeta': beta,
-            'LSMAD': LSMAD,
-            'MAD': MAD,
-            'KS': testStat,
-            'KS Significance': significance,
-        }
-        outputDf = outputDf._append(newDict, ignore_index = True)
-        print(f'Completed Row for {dist}')
-    for dist in lowBound:
-        alpha, beta = fitRegressBounded(dist, data, lowerBound)
-        LSMAD = getMAD(data, plottingPositions, dist, [alpha, beta, lowerBound])
-        params, MAD = gradientDescent([alpha, beta, lowerBound], dist, data, plottingPositions, numSteps)
-        estimates = getDF(dist, np.array(data), params)
-        KS = calcKStest(estimates)
-        testStat = KS[2]
-        significance = getKSTestSig(testStat, len(data))
-        newDict = {
-            'Dist': dist,
-            'alpha': params[0],
-            'beta': params[1],
-            'etaL': params[2],
-            'etaU': 0,
-            'LSalpha': alpha,
-            'LSbeta': beta,
-            'MAD': MAD,
-            'LSMAD': LSMAD,
-            'KS': testStat,
-            'KS Significance': significance
-        }
-        outputDf = outputDf._append(newDict, ignore_index = True)
-        print(f'Completed Row for {dist}')
-    for dist in bothBound:
-        alpha, beta = fitRegressDoubleBounded(dist, data, lowerBound, upperBound)
-        LSMAD = getMAD(data, plottingPositions, dist, [alpha, beta, lowerBound, upperBound])
-        params, MAD = gradientDescent([alpha, beta, lowerBound, upperBound], dist, data, plottingPositions, numSteps)
-        estimates = getDF(dist, np.array(data), params)
-        KS = calcKStest(estimates)
-        testStat = KS[2]
-        significance = getKSTestSig(testStat, len(data))
-        newDict = {
-            'Dist': dist,
-            'alpha': params[0],
-            'beta': params[1],
-            'etaL': params[2],
-            'etaU': params[3],
-            'MAD': MAD,
-            'LSalpha': alpha,
-            'LSbeta': beta,
-            'LSMAD':LSMAD,
-            'KS': testStat,
-            'KS Significance': significance
-        }
-        outputDf = outputDf._append(newDict, ignore_index = True)
-        print(f'Completed Row for {dist}')
+    for dist in unboundedDistributions + bothBound + lowBound:
+        outputDf = outputDf._append(findUDFitDist(dist, data, lowerBound, upperBound, numSteps, plottingPositions), ignore_index = True)
     return outputDf
     
 def setUpConditionalProb(doc, real, ys):
@@ -796,7 +773,7 @@ def printInLatexTable(listOfLists, colNames):
     print("\\end{tabular}")
     print('\\end{table}')
 
-def createFigureLatex(HWnum, figname, width):
+def createFigureLatex(HWnum, figname, width = 0.5):
     print(r'\begin{figure}[h]')
     print(r'\centering')
     print(r'\includegraphics[width = ' + str(width) +  r'\linewidth]{HW' + str(HWnum) + r'/Figures/' + figname + '}')
@@ -808,12 +785,13 @@ def quantileMethod5(quantileProbs, quantileVals):
     yhalf = quantileVals[2]
     yb = quantileVals[3]
     yd = quantileVals[4]
-    zc = standardNormal(quantileProbs[0])
-    za = standardNormal(quantileProbs[1])
-    zb = standardNormal(quantileProbs[3])
-    zd = standardNormal(quantileProbs[4])
+    zc = inverseStandardNormal(quantileProbs[0])
+    za = inverseStandardNormal(quantileProbs[1])
+    zb = inverseStandardNormal(quantileProbs[3])
+    zd = inverseStandardNormal(quantileProbs[4])
     sigma1 = (yb - ya) / (zb - za)
     sigma2 = (yd - yc) / (zd - zc)
     print(sigma1)
     print(sigma2)
     return yhalf, np.power(sigma1 * sigma2, 1/2)
+
