@@ -166,7 +166,7 @@ def normalDensity(nums,mu, sigma):
     return output
 
 def getDownloadsTab():
-    return "C:/Users/ucg8nb\Downloads"
+    return "C:/Users/ucg8nb/Downloads/"
 
 def getCorrelation(nqtX, nqtY):
     nqtX = np.array(nqtX)
@@ -611,11 +611,21 @@ def normalLinearRegressionEstimator(nqtZ, nqtV):
 def SC(a, sigma):
     return np.abs(a) / sigma
 
-def IS(a, sigma):
+def IS(a, sigma, S):
+    return np.power(np.power(SC(a, sigma) / (1 / S), -2) + 1, -1/2)
+
+def ISstandardNormal(a, sigma):
     return np.power(np.power(SC(a, sigma), -2) + 1, -1/2)
 
-def posteriorParameters(a, b, sigma):
-    den = a ** + sigma ** 2
+def posteriorParamters(a, b, sigma, M, S):
+    den = (a ** 2) * (S ** 2) + sigma ** 2
+    A = (a * (S ** 2)) / den
+    B = (M * (sigma ** 2) + (S ** 2) * a * b) / den
+    Tsqrd = ((sigma ** 2) * (S ** 2)) / den
+    return A, B, Tsqrd
+
+def posteriorParametersNormal(a, b, sigma):
+    den = a ** 2 + sigma ** 2
     A = a / den
     B = (-1 * a * b) / den
     Tsqrd = (sigma ** 2) / den
@@ -701,11 +711,9 @@ def findUDFitDist(dist, data, lowerBound = None, upperBound = None, numSteps = 1
     outputDict = {
         'Dist': dist,
         'alpha': params[0],
-        'Dist': dist,
-        'alpha': params[0],
         'beta': params[1],
-        'etaL': 0,
-        'etaU': 0,
+        'etaL': lowerBound if lowerBound is not None else 0,
+        'etaU': upperBound if upperBound is not None else 0,
         'LSalpha': alpha,
         'LSbeta': beta,
         'LSMAD': LSMAD,
