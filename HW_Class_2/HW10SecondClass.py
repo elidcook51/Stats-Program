@@ -49,13 +49,13 @@ postSTD = [np.sqrt(postParams[2]) for postParams in [stat.posteriorParamters(par
 IS = [stat.IS(params[0], params[2], S) for params in likelihoodparams]
 leadTime = [7 - i for i in range(len(IS))]
 
-informativessFig = 'Informativeness vs lead time.png'
-plt.scatter(x = leadTime, y = IS, color = 'gray')
-plt.title("Informativeness vs. lead time")
-plt.ylabel("Informativeness (0-1)")
-plt.xlabel("Lead Time (months)")
-plt.savefig(stat.getDownloadsTab() + informativessFig)
-stat.createFigureLatex(10, informativessFig, 0.65)
+# informativessFig = 'Informativeness vs lead time.png'
+# plt.scatter(x = leadTime, y = IS, color = 'gray')
+# plt.title("Informativeness vs. lead time")
+# plt.ylabel("Informativeness (0-1)")
+# plt.xlabel("Lead Time (months)")
+# plt.savefig(stat.getDownloadsTab() + informativessFig)
+# stat.createFigureLatex(10, informativessFig, 0.65)
 # stat.printInLatexTable([months, SC, postSTD, IS], ['Month', 'SC', 'Posterior Standard Deviation','IS'])
 
 # print(M, S)
