@@ -620,7 +620,7 @@ def ISstandardNormal(a, sigma):
 def posteriorParamters(a, b, sigma, M, S):
     den = (a ** 2) * (S ** 2) + sigma ** 2
     A = (a * (S ** 2)) / den
-    B = (M * (sigma ** 2) + (S ** 2) * a * b) / den
+    B = (M * (sigma ** 2) - (S ** 2) * a * b) / den
     Tsqrd = ((sigma ** 2) * (S ** 2)) / den
     return A, B, Tsqrd
 
