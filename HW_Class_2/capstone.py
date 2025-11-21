@@ -95,9 +95,28 @@ def readToOutputCSV(csvPath,outputPath):
     outputDf['X'] = probPoisoned
     outputDf.to_csv(outputPath)
 
-GMMresultFolder = "C:/Users/ucg8nb/Downloads/GMM Results"
+def extractResults(filepath):
+    df = pd.read_csv(filepath)
+
+    poisSet = df[df['W'] == 1]['X'].tolist()
+    controlSet = df[df['W'] == 0]['X'].tolist()
+
+    pmean = np.mean(poisSet)
+    pstd = np.std(poisSet)
+
+    cmean = np.mean(controlSet)
+    cstd = np.std(controlSet)
+
+    print(f"Poisoned - mean: {np.mean(poisSet)}, standard deviation: {np.std(poisSet)}")
+    print(f"Not Poisoned - mean: {np.mean(controlSet)}, standard deviation: {np.std(controlSet)}")
+
+
+# GMMresultFolder = "C:/Users/ucg8nb/Downloads/GMM Results"
 GMMOutputFolder = "C:/Users/ucg8nb/Downloads/GMM Results Output"
-folderReader(GMMresultFolder, GMMOutputFolder)
+for filename in os.listdir(GMMOutputFolder):
+    filepath = os.path.join(GMMOutputFolder, filename)
+    extractResults(filepath)
+# folderReader(GMMresultFolder, GMMOutputFolder)
 
 # firstTest = pd.read_csv("C:/Users/ucg8nb/Downloads/First Test GMM.csv")
 # poisSet = firstTest[firstTest['W'] == 1]
