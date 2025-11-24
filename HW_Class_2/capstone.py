@@ -112,10 +112,10 @@ def extractResults(filepath):
 
 
 # GMMresultFolder = "C:/Users/ucg8nb/Downloads/GMM Results"
-GMMOutputFolder = "C:/Users/ucg8nb/Downloads/GMM Results Output"
-for filename in os.listdir(GMMOutputFolder):
-    filepath = os.path.join(GMMOutputFolder, filename)
-    extractResults(filepath)
+# GMMOutputFolder = "C:/Users/ucg8nb/Downloads/GMM Results Output"
+# for filename in os.listdir(GMMOutputFolder):
+#     filepath = os.path.join(GMMOutputFolder, filename)
+#     extractResults(filepath)
 # folderReader(GMMresultFolder, GMMOutputFolder)
 
 # firstTest = pd.read_csv("C:/Users/ucg8nb/Downloads/First Test GMM.csv")
