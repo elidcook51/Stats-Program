@@ -178,6 +178,9 @@ def getCorrelation(nqtX, nqtY):
     ySTD = np.std(nqtY, ddof = 1)
     return (bothBar  - xBar * yBar) / (xSTD * ySTD)
 
+def getPosteriorCorrelation(gamma, IS1, IS2):
+    return 1 - (1 - gamma ** 2) / (1 - (gamma ** 2) * (IS1 ** 2) * (IS2 ** 2))
+
 def logisticDF(nums, alpha, beta):
     return np.power(1 + np.exp(-1 * (nums - beta) / alpha), -1)
 
@@ -617,7 +620,7 @@ def IS(a, sigma, S):
 def ISstandardNormal(a, sigma):
     return np.power(np.power(SC(a, sigma), -2) + 1, -1/2)
 
-def posteriorParamters(a, b, sigma, M, S):
+def posteriorParameters(a, b, sigma, M, S):
     den = (a ** 2) * (S ** 2) + sigma ** 2
     A = (a * (S ** 2)) / den
     B = (M * (sigma ** 2) - (S ** 2) * a * b) / den
