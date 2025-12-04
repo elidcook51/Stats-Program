@@ -8,11 +8,12 @@ jointSample = pd.read_excel("C:/Users/ucg8nb/Downloads/jointSampleHW11.xlsx")
 
 X = np.array(jointSample['X'].tolist())
 W = np.array(jointSample['W'].tolist())
-
-W,X = zip(*sorted(zip(W, X)))
+years = list(range(1971, 1984))
+W,X,years = (list(x) for x in zip(*sorted(zip(W, X, years))))
 W = np.array(W)
 X = np.array(X)
-
+print(W)
+print(years)
 # print(W)
 # print(X)
 
@@ -22,15 +23,15 @@ a = 0.522
 b = 173.26
 sigma = 76.86
 
-A, B, Tsqrd = stat.posteriorParamters(a, b, sigma, M, S)
+A, B, Tsqrd = stat.posteriorParameters(a, b, sigma, M, S)
 T = np.sqrt(Tsqrd)
 
-# A = 1.052
-# B = 7.7
-# T = 109.11
+A = 1.052
+B = 7.7
+T = 109.11
 
-paramterNames = [r'$A$', r'$B$', r'$T^2$']
-paramValues = [A, B, Tsqrd]
+# paramterNames = [r'$A$', r'$B$', r'$T^2$']
+# paramValues = [A, B, Tsqrd]
 
 # stat.printInLatexTable([paramterNames, paramValues], ['Parameter', 'Value'])
 
@@ -49,30 +50,36 @@ for w in list(W):
     qn.append(curSum / count)
 qn = np.array(qn)
 
+# print(pn)
+# print(qn)
+
 diff = np.abs(pn - qn)
 
 # print(np.max(diff))
 
-year = list(range(1971, 1983))
+
 n = list(range(1, len(W) + 1))
 
 colNames = ['Year', '(n)', r'$w_{(n)}$', r'$p_n$', r'$q_n$', r'$|p_n - q_n|$']
-# stat.printInLatexTable([year, n, W, pn, qn, diff], colNames)
+stat.printInLatexTable([years, n, W, pn, qn, diff], colNames)
 
-figName = 'Marginal Calibration Function.png'
-plt.scatter(x = pn, y = qn, color = 'gray')
-plt.plot([0, 1], [0,1], color = 'lightgray', linestyle  = '--')
-plt.xlim(0,1)
-plt.ylim(0,1)
-plt.title("Marginal Calibration Function")
-plt.xlabel("pn (prior probability)")
-plt.ylabel("qn (mean posterior probability)")
-plt.savefig(stat.getDownloadsTab()  + figName)
-stat.createFigureLatex(11, figName)
+# figName = 'Marginal Calibration Function.png'
+# plt.scatter(x = pn, y = qn, color = 'gray')
+# plt.plot([0, 1], [0,1], color = 'lightgray', linestyle  = '--')
+# plt.xlim(0,1)
+# plt.ylim(0,1)
+# plt.title("Marginal Calibration Function")
+# plt.xlabel("pn (prior probability)")
+# plt.ylabel("qn (mean posterior probability)")
+# plt.savefig(stat.getDownloadsTab()  + figName)
+# stat.createFigureLatex(11, figName)
 
 
 # U = Phi(W, X)
 # plotPos = stat.metaGaussianPlottingPositions(len(U))
+# Un, years = zip(*sorted(zip(U, years)))
+# Un = list(Un)
+# years = list(years)
 
 # figName = 'Empirical Distribution of U.png'
 # plt.scatter(x = sorted(U), y = plotPos, color = 'gray')
@@ -84,13 +91,13 @@ stat.createFigureLatex(11, figName)
 
 
 
-# us = np.abs(U - plotPos)
+# us = np.abs(np.array(Un) - np.array(plotPos))
 # print(np.max(us))
 
 
 
 # colNames = ['Year', r'$u_{(n)}$', r'$p_n$', r'$|p_n - u_{(n)}|$']
-# stat.printInLatexTable([year, U, plotPos, np.abs(U - plotPos)], colNames)
+# stat.printInLatexTable([years, Un, plotPos, np.abs(U - plotPos)], colNames)
 
 # newFigName = 'Uniform Calibration function of the forecaster.png'
 # plt.scatter(x = sorted(U), y = plotPos, color = 'gray')

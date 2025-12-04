@@ -32,12 +32,12 @@ import matplotlib.pyplot as plt
 
 # stat.printInLatexTable([decisionTypes, first4], colNames)
 
-params1 = [1.5, 0.6]
-params2 = [3.6, 0.9]
+params1 = [0.6, 1.5]
+params2 = [0.9, 3.6]
 
 nums = np.arange(-14, 10, 0.001)
 
-p1 = 0.7
+p1 = 0.3
 
 g1 = stat.getdf('GB',nums, params1)
 g2 = stat.getdf('RG', nums, params2)
@@ -53,25 +53,25 @@ numindex = [nums[ind] for ind in maxgindex]
 
 maxgvals = [np.max(gs) for gs in gvals]
 
-figNames = ['p1 point 3.png', 'p1 point 7.png']
+figNames = ['p1 point 3 redo.png', 'p1 point 7 redo.png']
 
-for i in range(len(gvals)):
-    plt.scatter(x = nums, y = gvals[i], color = 'lightgray', s= 5)
-    plt.scatter(x = numindex[i], y = maxgvals[i], color = 'gray', s =120, label = 'Optimal Aiming Point')
-    plt.title("Density function with optimal aiming point indicated")
-    plt.legend()
-    plt.xlabel("Aiming points")
-    plt.ylabel("Probability Density")
-    plt.savefig(stat.getDownloadsTab() + figNames[i])
-    stat.createFigureLatex(12, figNames[i])
-    plt.clf()
+# for i in range(len(gvals)):
+#     plt.scatter(x = nums, y = gvals[i], color = 'lightgray', s= 5)
+#     plt.scatter(x = numindex[i], y = maxgvals[i], color = 'gray', s =120, label = 'Optimal Aiming Point')
+#     plt.title("Density function with optimal aiming point indicated")
+#     plt.legend()
+#     plt.xlabel("Aiming points")
+#     plt.ylabel("Probability Density")
+#     plt.savefig(stat.getDownloadsTab() + figNames[i])
+#     stat.createFigureLatex(12, figNames[i])
+#     plt.clf()
 
-# colNames = ['$p_1$ value', '$a^*$', '$U^*$']
+colNames = ['$p_1$ value', '$a^*$', '$U^*$']
 
-# stat.printInLatexTable([pvals, numindex, maxgvals], colNames)
+stat.printInLatexTable([pvals, numindex, maxgvals], colNames)
 
 
-# figName = 'Second p1 density.png'
+# figName = 'First p1 density redo.png'
 # plt.scatter(x = nums,y = g1, color = 'lightgray', s = 5, label = 'g1')
 # plt.scatter(x = nums, y = g2, color = 'darkgray', s = 5, label = 'g2')
 # plt.scatter(x = nums, y = g, color = 'gray', s =5, label = 'g')
