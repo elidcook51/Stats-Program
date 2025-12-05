@@ -9,9 +9,11 @@ import os
 import shutil
 from sklearn.metrics import roc_curve
 
-df = pd.read_json("C:/Users/ucg8nb/Downloads/results.jsonl", lines = True)
-seconddf = pd.read_json("C:/Users/ucg8nb/Downloads/results (1).jsonl", lines = True)
-df = pd.concat([df, seconddf.apply(pd.Series)], ignore_index = True)
+# df = pd.read_json("C:/Users/ucg8nb/Downloads/results.jsonl", lines = True)
+# seconddf = pd.read_json("C:/Users/ucg8nb/Downloads/results (1).jsonl", lines = True)
+# df = pd.concat([df, seconddf.apply(pd.Series)], ignore_index = True)
+df = pd.read_json("C:/Users/ucg8nb/Downloads/results (2).jsonl", lines = True)
+
 
 def parse_value(val_str):
     val_str = val_str.strip()
@@ -107,7 +109,7 @@ poisonMethods = ['RandomPoison', 'SwitchLabel', 'OneToMany', 'ManyToOne', 'FlipN
 
 proportionPosioned = [0, 0.02, 0.05, 0.15, 0.3]
 
-gmm = df[df['detection method'] == 'GMM_GPU'] 
+gmm = df[df['detection method'] == 'GMM'] 
 
 wasserstein = df[df['detection method'] == 'WassersteinDistance1D']
 wasserstein['Probability Vector'] = wasserstein['Probability Vector'].apply(flattenMatrix)
@@ -115,6 +117,8 @@ wasserstein['threshold'] = pd.to_numeric(wasserstein['threshold'])
 
 def roc_curve_save(isPoisoned, probVector, figPath, figName):
     fpr, tpr, thresh = roc_curve(isPoisoned, probVector)
+
+    # print(np.array(fpr) / np.array(tpr))
 
     plt.figure()
     plt.plot(fpr, tpr)
@@ -127,39 +131,42 @@ def roc_curve_save(isPoisoned, probVector, figPath, figName):
     plt.savefig(figPath)
     plt.close()
 
-# outputFolder = stat.getDownloadsTab() + 'GMM ROC Curves'
-# if os.path.exists(outputFolder):
-#     shutil.rmtree(outputFolder)
+outputFolder = stat.getDownloadsTab() + 'GMM ROC Curves Double Test'
+if os.path.exists(outputFolder):
+    shutil.rmtree(outputFolder)
 
-# os.makedirs(outputFolder)
-# for pMeth in poisonMethods:
-#     for prop in proportionPosioned:
-#         figName = f"{pMeth} at {prop * 100}%"
-#         figPath = os.path.join(outputFolder, f"{figName}.png")
-#         tempDf = gmm[gmm['poison method'] == pMeth]
-#         tempDf = tempDf[tempDf['self.prop'] == prop]
-#         probVectorList = [item for sublist in tempDf['Probability Vector'].tolist() for item in sublist]
-#         isPoisonedList = [item for sublist in tempDf['isPoisoned'].tolist() for item in sublist]
-#         roc_curve_save(isPoisonedList, probVectorList, figPath, figName)
+os.makedirs(outputFolder)
+for pMeth in poisonMethods:
+    for prop in proportionPosioned:
+        figName = f"{pMeth} at {prop * 100}%"
+        figPath = os.path.join(outputFolder, f"{figName}.png")
+        tempDf = gmm[gmm['poison method'] == pMeth]
+        tempDf = tempDf[tempDf['self.prop'] == prop]
+        probVectorList = [item for sublist in tempDf['Probability Vector'].tolist() for item in sublist]
+        isPoisonedList = [item for sublist in tempDf['isPoisoned'].tolist() for item in sublist]
+        if len(probVectorList) <= 0:
+            continue
+        roc_curve_save(isPoisonedList, probVectorList, figPath, figName)
 
-thresholds = [3,4,5]
+# thresholds = [3,4,5]
 
-wassersteinOutputFolder = stat.getDownloadsTab() + 'Wasserstein'
-if os.path.exists(wassersteinOutputFolder):
-    shutil.rmtree(wassersteinOutputFolder)
-os.makedirs(wassersteinOutputFolder)
-for t in thresholds:
-    newDirs = os.path.join(wassersteinOutputFolder, f'Threshold of {t}')
-    os.makedirs(newDirs)
-    for pMeth in poisonMethods:
-        for prop in proportionPosioned:
-            figName = f"{pMeth} at {prop * 100}%"
-            figPath = os.path.join(newDirs, f"{figName}.png")
-            tempDf = wasserstein[wasserstein['poison method'] == pMeth]
-            tempDf = tempDf[tempDf['self.prop'] == prop]
-            tempDf = tempDf[tempDf['threshold'] == t]
-            probVectorList = [item for sublist in tempDf['Probability Vector'].tolist() for item in sublist]
-            isPoisonedList = [item for sublist in tempDf['isPoisoned'].tolist() for item in sublist]
-            print(len(probVectorList))
-            print(len(isPoisonedList))
-            roc_curve_save(isPoisonedList, probVectorList, figPath, figName)
+# wassersteinOutputFolder = stat.getDownloadsTab() + 'Wasserstein'
+# if os.path.exists(wassersteinOutputFolder):
+#     shutil.rmtree(wassersteinOutputFolder)
+# os.makedirs(wassersteinOutputFolder)
+# for t in thresholds:
+#     newDirs = os.path.join(wassersteinOutputFolder, f'Threshold of {t}')
+#     os.makedirs(newDirs)
+#     for pMeth in poisonMethods:
+#         for prop in proportionPosioned:
+#             figName = f"{pMeth} at {prop * 100}%"
+#             figPath = os.path.join(newDirs, f"{figName}.png")
+#             tempDf = wasserstein[wasserstein['poison method'] == pMeth]
+#             tempDf = tempDf[tempDf['self.prop'] == prop]
+#             tempDf = tempDf[tempDf['threshold'] == t]
+#             probVectorList = [item for sublist in tempDf['Probability Vector'].tolist() for item in sublist]
+#             isPoisonedList = [item for sublist in tempDf['isPoisoned'].tolist() for item in sublist[:100]]
+#             # print(len(probVectorList))
+#             # print(len(isPoisonedList))
+#             # print(probVectorList)
+#             roc_curve_save(isPoisonedList, probVectorList, figPath, figName)
