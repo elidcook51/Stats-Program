@@ -12,7 +12,7 @@ from sklearn.metrics import roc_curve
 # df = pd.read_json("C:/Users/ucg8nb/Downloads/results.jsonl", lines = True)
 # seconddf = pd.read_json("C:/Users/ucg8nb/Downloads/results (1).jsonl", lines = True)
 # df = pd.concat([df, seconddf.apply(pd.Series)], ignore_index = True)
-df = pd.read_json("C:/Users/ucg8nb/Downloads/results (2).jsonl", lines = True)
+df = pd.read_json("C:/Users/ucg8nb/Downloads/results (4).jsonl", lines = True)
 
 
 def parse_value(val_str):
